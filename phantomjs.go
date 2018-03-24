@@ -36,8 +36,9 @@ const (
 
 // Process represents a PhantomJS process.
 type Process struct {
-	path string
-	cmd  *exec.Cmd
+	path    string
+	cmd     *exec.Cmd
+	Display string
 
 	// Path to the 'phantomjs' binary.
 	BinPath string
@@ -57,6 +58,7 @@ func NewProcess() *Process {
 		Port:    DefaultPort,
 		Stdout:  os.Stdout,
 		Stderr:  os.Stderr,
+		Display: ":0.0",
 	}
 }
 
@@ -83,7 +85,7 @@ func (p *Process) Open() error {
 
 		// Start external process.
 		cmd := exec.Command(p.BinPath, scriptPath)
-		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port)}
+		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port), fmt.Sprintf("DISPLAY=%v", p.Display)}
 		cmd.Stdout = p.Stdout
 		cmd.Stderr = p.Stderr
 		if err := cmd.Start(); err != nil {
