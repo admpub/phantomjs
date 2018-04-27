@@ -670,8 +670,7 @@ func (p *WebPage) SetSettings(settings WebPageSettings) error {
 			XSSAuditingEnabled:            settings.XSSAuditingEnabled,
 			WebSecurityEnabled:            settings.WebSecurityEnabled,
 			IgnoreSslErrors:               settings.IgnoreSslErrors,
-
-			ResourceTimeout: int(settings.ResourceTimeout / time.Millisecond),
+			ResourceTimeout:               int(settings.ResourceTimeout / time.Millisecond),
 		},
 	}
 	return p.ref.process.doJSON("POST", "/webpage/SetSettings", req, nil)
@@ -1135,8 +1134,7 @@ type WebPageSettings struct {
 	XSSAuditingEnabled            bool
 	WebSecurityEnabled            bool
 	IgnoreSslErrors               bool
-
-	ResourceTimeout time.Duration
+	ResourceTimeout               time.Duration
 }
 
 type webPageSettingsJSON struct {
