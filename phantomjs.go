@@ -653,7 +653,6 @@ func (p *WebPage) Settings() (WebPageSettings, error) {
 		Password:                      resp.Settings.Password,
 		XSSAuditingEnabled:            resp.Settings.XSSAuditingEnabled,
 		WebSecurityEnabled:            resp.Settings.WebSecurityEnabled,
-		IgnoreSslErrors:               resp.Settings.IgnoreSslErrors,
 		ResourceTimeout:               time.Duration(resp.Settings.ResourceTimeout) * time.Millisecond,
 	}, nil
 }
@@ -674,7 +673,6 @@ func (p *WebPage) SetSettings(settings WebPageSettings) error {
 			Password:                      settings.Password,
 			XSSAuditingEnabled:            settings.XSSAuditingEnabled,
 			WebSecurityEnabled:            settings.WebSecurityEnabled,
-			IgnoreSslErrors:               settings.IgnoreSslErrors,
 			ResourceTimeout:               int(settings.ResourceTimeout / time.Millisecond),
 		},
 	}
@@ -1138,7 +1136,6 @@ type WebPageSettings struct {
 	Password                      string
 	XSSAuditingEnabled            bool
 	WebSecurityEnabled            bool
-	IgnoreSslErrors               bool
 	ResourceTimeout               time.Duration
 }
 
@@ -1151,7 +1148,6 @@ type webPageSettingsJSON struct {
 	Password                      string `json:"password"`
 	XSSAuditingEnabled            bool   `json:"XSSAuditingEnabled"`
 	WebSecurityEnabled            bool   `json:"webSecurityEnabled"`
-	IgnoreSslErrors               bool   `json:"ignoreSslErrors"`
 	ResourceTimeout               int    `json:"resourceTimeout"`
 }
 
