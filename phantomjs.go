@@ -36,9 +36,8 @@ const (
 
 // Process represents a PhantomJS process.
 type Process struct {
-	path    string
-	cmd     *exec.Cmd
-	Display string
+	path string
+	cmd  *exec.Cmd
 
 	// Path to the 'phantomjs' binary.
 	BinPath string
@@ -58,7 +57,6 @@ func NewProcess() *Process {
 		Port:    DefaultPort,
 		Stdout:  os.Stdout,
 		Stderr:  os.Stderr,
-		Display: ":0.0",
 	}
 }
 
@@ -85,7 +83,7 @@ func (p *Process) Open() error {
 
 		// Start external process.
 		cmd := exec.Command(p.BinPath, scriptPath)
-		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port), fmt.Sprintf("DISPLAY=%v", p.Display)}
+		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port)}
 		cmd.Stdout = p.Stdout
 		cmd.Stderr = p.Stderr
 		if err := cmd.Start(); err != nil {
@@ -650,7 +648,7 @@ func (p *WebPage) Settings() (WebPageSettings, error) {
 		Password:                      resp.Settings.Password,
 		XSSAuditingEnabled:            resp.Settings.XSSAuditingEnabled,
 		WebSecurityEnabled:            resp.Settings.WebSecurityEnabled,
-		ignoreSslErrors:               resp.Settings.ignoreSslErrors,
+		IgnoreSslErrors:               resp.Settings.IgnoreSslErrors,
 		ResourceTimeout:               time.Duration(resp.Settings.ResourceTimeout) * time.Millisecond,
 	}, nil
 }
@@ -671,8 +669,9 @@ func (p *WebPage) SetSettings(settings WebPageSettings) error {
 			Password:                      settings.Password,
 			XSSAuditingEnabled:            settings.XSSAuditingEnabled,
 			WebSecurityEnabled:            settings.WebSecurityEnabled,
-			ignoreSslErrors:               settings.ignoreSslErrors,
-			ResourceTimeout:               int(settings.ResourceTimeout / time.Millisecond),
+			IgnoreSslErrors:               settings.IgnoreSslErrors,
+
+			ResourceTimeout: int(settings.ResourceTimeout / time.Millisecond),
 		},
 	}
 	return p.ref.process.doJSON("POST", "/webpage/SetSettings", req, nil)
@@ -1135,8 +1134,9 @@ type WebPageSettings struct {
 	Password                      string
 	XSSAuditingEnabled            bool
 	WebSecurityEnabled            bool
-	ignoreSslErrors               bool
-	ResourceTimeout               time.Duration
+	IgnoreSslErrors               bool
+
+	ResourceTimeout time.Duration
 }
 
 type webPageSettingsJSON struct {
@@ -1148,7 +1148,7 @@ type webPageSettingsJSON struct {
 	Password                      string `json:"password"`
 	XSSAuditingEnabled            bool   `json:"XSSAuditingEnabled"`
 	WebSecurityEnabled            bool   `json:"webSecurityEnabled"`
-	ignoreSslErrors               bool   `json:"ignoreSslErrors"`
+	IgnoreSslErrors               bool   `json:"ignoreSslErrors"`
 	ResourceTimeout               int    `json:"resourceTimeout"`
 }
 
