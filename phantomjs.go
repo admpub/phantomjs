@@ -82,7 +82,7 @@ func (p *Process) Open() error {
 		}
 
 		// Start external process.
-		cmd := exec.Command(p.BinPath, scriptPath)
+		cmd := exec.Command(p.BinPath, fmt.Sprintf("--ignore-ssl-errors=true"), scriptPath)
 		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port)}
 		cmd.Stdout = p.Stdout
 		cmd.Stderr = p.Stderr
@@ -263,7 +263,7 @@ func (p *WebPage) Open(url string) error {
 	}
 
 	if resp.Status != "success" {
-		return errors.New(fmt.Sprintf("failed - %v", resp.Status))
+		return errors.New("failed")
 	}
 	return nil
 }
