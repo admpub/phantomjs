@@ -263,7 +263,7 @@ func (p *WebPage) Open(url string) error {
 	}
 
 	if resp.Status != "success" {
-		return errors.New("failed")
+		return errors.New(fmt.Sprintf("failed - %v", resp.Status))
 	}
 	return nil
 }
