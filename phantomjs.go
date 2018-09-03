@@ -88,7 +88,8 @@ func (p *Process) Open() error {
 
 		// Start external process.
 		cmd := exec.Command(p.BinPath, "--local-to-remote-url-access=true", fmt.Sprintf("--ignore-ssl-errors=%v", p.IgnoreSslErrors), scriptPath) // Yeah, I know right? Fuck Phantomjs
-		cmd.Env = []string{fmt.Sprintf("PORT=%d", p.Port)}
+		cmd.Env = os.Environ()
+		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", p.Port))
 		cmd.Stdout = p.Stdout
 		cmd.Stderr = p.Stderr
 		if err := cmd.Start(); err != nil {
