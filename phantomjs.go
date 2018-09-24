@@ -8,9 +8,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -55,6 +57,22 @@ type Process struct {
 	IgnoreSslErrors bool
 
 	AdditionalArgs []string
+}
+
+// NewWithProxy NewWithProxy(`http://user:pass@192.168.xxx.xx:8080`)
+func NewWithProxy(proxyDSN string) (*Process, error) {
+	proxyURL, err := url.Parse(proxyDSN)
+	if err != nil {
+		return nil, err
+	}
+	var proxyAuth string
+	if proxyURL.User != nil {
+		proxyAuth = proxyURL.User.String()
+	}
+	return NewProcessUsingProxy(
+		proxyURL.Host,
+		strings.TrimSuffix(proxyURL.Scheme, `:`),
+		proxyAuth), nil
 }
 
 // NewProcessUsingProxy NewProcessUsingProxy("196.18.xxx.xxx:44","http","user:pass")
