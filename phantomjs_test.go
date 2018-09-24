@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/benbjohnson/phantomjs"
+	"github.com/admpub/phantomjs"
 )
 
 // Ensure web page can return whether it can navigate forward.

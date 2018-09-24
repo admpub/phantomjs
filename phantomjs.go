@@ -29,7 +29,7 @@ const (
 )
 
 // Default settings.
-const (
+var (
 	DefaultPort    = 20202
 	DefaultBinPath = "phantomjs"
 )
@@ -38,6 +38,8 @@ const (
 type Process struct {
 	path string
 	cmd  *exec.Cmd
+
+	AdditionalPath string
 
 	// Path to the 'phantomjs' binary.
 	BinPath string
@@ -51,6 +53,24 @@ type Process struct {
 
 	// SSL Error messages are a pain in the ass
 	IgnoreSslErrors bool
+
+	AdditionalArgs []string
+}
+
+// NewProcessUsingProxy NewProcessUsingProxy("196.18.xxx.xxx:44","http","user:pass")
+func NewProcessUsingProxy(proxyAddr string, proxyType string, proxyAuth string) *Process {
+	process := NewProcess()
+	if len(proxyAddr) > 0 {
+		if len(proxyType) == 0 {
+			proxyType = "http"
+		}
+		process.AddArgs("--proxy=" + proxyAddr)
+		process.AddArgs("--proxy-type=" + proxyType)
+		if len(proxyAuth) > 0 {
+			process.AddArgs("--proxy-auth=" + proxyAuth)
+		}
+	}
+	return process
 }
 
 // NewProcess returns a new instance of Process.
@@ -65,6 +85,11 @@ func NewProcess() *Process {
 	}
 }
 
+func (p *Process) AddArgs(args ...string) *Process {
+	p.AdditionalArgs = append(p.AdditionalArgs, args...)
+	return p
+}
+
 // Path returns a temporary path that the process is run from.
 func (p *Process) Path() string {
 	return p.path
@@ -73,8 +98,11 @@ func (p *Process) Path() string {
 // Open start the phantomjs process with the shim script.
 func (p *Process) Open() error {
 	if err := func() error {
+		if p.AdditionalPath != "" && p.AdditionalPath != "-" {
+			p.AdditionalPath = p.AdditionalPath + "-"
+		}
 		// Generate temporary path to run script from.
-		path, err := ioutil.TempDir("", "phantomjs-")
+		path, err := ioutil.TempDir("", "phantomjs-"+p.AdditionalPath)
 		if err != nil {
 			return err
 		}
@@ -85,9 +113,15 @@ func (p *Process) Open() error {
 		if err := ioutil.WriteFile(scriptPath, []byte(shim), 0600); err != nil {
 			return err
 		}
-
+		args := []string{
+			"--local-to-remote-url-access=true",
+			fmt.Sprintf("--ignore-ssl-errors=%v", p.IgnoreSslErrors),
+		}
+		if len(p.AdditionalArgs) > 0 {
+			args = append(args, p.AdditionalArgs...)
+		}
 		// Start external process.
-		cmd := exec.Command(p.BinPath, "--local-to-remote-url-access=true", fmt.Sprintf("--ignore-ssl-errors=%v", p.IgnoreSslErrors), scriptPath) // Yeah, I know right? Fuck Phantomjs
+		cmd := exec.Command(p.BinPath, append(args, scriptPath)...)
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", p.Port))
 		cmd.Stdout = p.Stdout
