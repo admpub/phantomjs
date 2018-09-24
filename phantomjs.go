@@ -142,12 +142,13 @@ func (p *Process) Open() error {
 		cmd := exec.Command(p.BinPath, append(args, scriptPath)...)
 		cmd.Env = os.Environ()
 		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", p.Port))
+		cmd.Stdin = os.Stdin
 		cmd.Stdout = p.Stdout
 		cmd.Stderr = p.Stderr
+		p.cmd = cmd
 		if err := cmd.Start(); err != nil {
 			return err
 		}
-		p.cmd = cmd
 
 		// Wait until process is available.
 		if err := p.wait(); err != nil {
@@ -190,7 +191,7 @@ func (p *Process) URL() string {
 
 // wait continually checks the process until it gets a response or times out.
 func (p *Process) wait() error {
-	ticker := time.NewTicker(1000 * time.Millisecond)
+	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
 	timer := time.NewTimer(30 * time.Second)
@@ -1216,7 +1217,8 @@ var webserver = require('webserver');
 
 // Serves RPC API.
 var server = webserver.create();
-server.listen(system.env["PORT"], function(request, response) {
+var port = system.env["PORT"];
+var service = server.listen(port, function(request, response) {
 	try {
 		switch (request.url) {
 			case '/ping': return handlePing(request, response);
@@ -1300,6 +1302,13 @@ server.listen(system.env["PORT"], function(request, response) {
 		response.closeGracefully();
 	}
 });
+
+if (service) {
+    console.log('Web server running on port ' + port);
+} else {
+    console.log('Error: Could not create web server listening on port ' + port);
+    phantom.exit();
+}
 
 function handlePing(request, response) {
 	response.statusCode = 200;
